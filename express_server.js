@@ -2,8 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const PORT = 8080;
+const cookieParser = require('cookie-parser')
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -12,16 +14,24 @@ const urlDatabase = {
 };
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies["username"]
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -63,11 +73,16 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// Add a POST route to handle /login
+// Add a route to handle a POST to /login. It sets a cookie named username to the value submitted via the login form. Then, it redirects the browser back to the /urls page"
 app.post('/login', (req, res) => {
   if (req.body.username !== "") {
     res.cookie("username", req.body.username);
   }
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+  res.cookie("username", JSON.stringify(undefined));
   res.redirect('/urls');
 });
 
