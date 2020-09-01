@@ -14,7 +14,7 @@ const urlDatabase = {
 };
 
 app.get("/urls", (req, res) => {
-  let templateVars = {
+  const templateVars = {
     urls: urlDatabase,
     username: req.cookies["username"]
   };
@@ -22,12 +22,12 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"] };
+  const templateVars = { username: req.cookies["username"] };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {
+  const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
     username: req.cookies["username"]
