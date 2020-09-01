@@ -31,7 +31,12 @@ app.get("/urls.json", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  const longURl = req.body.longURL;
+  if (longURl.match(/^(https:\/\/|http:\/\/)/)) {
+    urlDatabase[shortURL] = longURl;
+  } else {
+    urlDatabase[shortURL] = `https://www.${longURl}`;
+  }
   res.redirect(`/urls/${shortURL}`);
 });
 
