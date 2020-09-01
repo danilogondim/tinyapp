@@ -45,6 +45,18 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
+app.post('/urls/:shortURL/delete', (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
+});
+
+
+// Add a POST route that removes a URL resource: POST /urls/:shortURL/delete
+
+// Use Javascript's delete operator to remove the URL.
+
+// After the resource has been deleted, redirect the client back to the urls_index page ("/urls").
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
