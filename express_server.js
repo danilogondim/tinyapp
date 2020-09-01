@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const PORT = 8080;
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -82,7 +82,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.cookie("username", JSON.stringify(undefined));
+  res.clearCookie("username");
   res.redirect('/urls');
 });
 
