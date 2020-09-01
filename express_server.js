@@ -35,7 +35,7 @@ app.post("/urls", (req, res) => {
   if (longURl.match(/^(https:\/\/|http:\/\/)/)) {
     urlDatabase[shortURL] = longURl;
   } else {
-    urlDatabase[shortURL] = `https://www.${longURl}`;
+    urlDatabase[shortURL] = `http://www.${longURl}`;
   }
   res.redirect(`/urls/${shortURL}`);
 });
@@ -49,6 +49,18 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
+});
+
+// Add a POST route that updates a URL resource: POST /urls/:shortURL, and redirects the client back to the urls_show page ("/urls/:shortURL").
+app.post('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURl = req.body.longURL;
+  if (longURl.match(/^(https:\/\/|http:\/\/)/)) {
+    urlDatabase[shortURL] = longURl;
+  } else {
+    urlDatabase[shortURL] = `http://www.${longURl}`;
+  }
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.listen(PORT, () => {
