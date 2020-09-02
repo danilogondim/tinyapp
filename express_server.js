@@ -88,21 +88,6 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// Add a route to handle a POST to /login. It sets a cookie named username to the value submitted via the login form. Then, it redirects the browser back to the /urls page"
-app.post('/login', (req, res) => {
-  // now we need to change this conditional. We should compare our user database with the passed credations
-  // if (req.body.user_id !== "") {
-  //   res.cookie("username", req.body.username);
-  // }
-  res.redirect('/urls');
-});
-
-// Add a route to handle a POST to /logout. It clears the user_id cookie and redirects to /urls
-app.post('/logout', (req, res) => {
-  res.clearCookie("user_id");
-  res.redirect('/urls');
-});
-
 // Add a GET route to render the register template
 app.get('/register', (req, res) => {
   // SHOULD I PASS THE USER_ID or USER OBJECT???? IF I AM REGISTERING SOMEONE NEW, IT SHOULD MEAN THAT I DON'T HAVE THE COOKIE SET
@@ -124,6 +109,34 @@ app.post('/register', (req, res) => {
   const id = generateRandomString();
   users[id] = { id, email, password };
   res.cookie("user_id", id);
+  res.redirect('/urls');
+});
+
+// Add a GET route to render the login template
+app.get('/login', (req, res) => {
+  // SHOULD I PASS THE USER_ID or USER OBJECT???? IF I HAVE THE COOKIE SET, WHAT SHOULD BE THE EXPECTED BEHAVIOR?
+  const templateVars = {
+    user: users[req.cookies["user_id"]]
+  };
+  res.render('login', templateVars);
+});
+
+// Add a route to handle a POST to /login. It sets a cookie named username to the value submitted via the login form. Then, it redirects the browser back to the /urls page"
+app.post('/login', (req, res) => {
+  // compare the given credentials to our user database
+  const { email, password } = req.body;
+  for (const key in users) {
+    if (users[key].email === email && users[key].password === password) {
+      res.cookie("user_id", key);
+      return res.redirect('/urls');
+    }
+  }
+  return res.redirect("login");
+});
+
+// Add a route to handle a POST to /logout. It clears the user_id cookie and redirects to /urls
+app.post('/logout', (req, res) => {
+  res.clearCookie("user_id");
   res.redirect('/urls');
 });
 
