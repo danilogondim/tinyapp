@@ -13,6 +13,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
+
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -81,15 +94,25 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-// Add a rout to handle a POST to /logout. It clears the username cookie and redirects to /urls
+// Add a route to handle a POST to /logout. It clears the username cookie and redirects to /urls
 app.post('/logout', (req, res) => {
   res.clearCookie("username");
   res.redirect('/urls');
 });
 
+// Add a GET route to render the register template
 app.get('/register', (req, res) => {
   const templateVars = { username: req.cookies["username"] };
   res.render('register', templateVars);
+});
+
+// Add a POST route to include the new user in our users object
+app.post('/register', (req, res) => {
+  const id = generateRandomString();
+  const { email, password } = req.body;
+  users[id] = { id, email, password };
+  res.cookie("user_id", id);
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
