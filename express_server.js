@@ -14,8 +14,8 @@ const urlDatabase = {
 };
 
 const users = {
-  "userRandomID": {
-    id: "userRandomID",
+  "aJ48lW": {
+    id: "aJ48lW",
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
@@ -27,9 +27,18 @@ const users = {
 };
 
 app.get("/urls", (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  const urls = {};
+  for (const shortURL in urlDatabase) {
+    const userID = urlDatabase[shortURL].userID;
+    if (user && userID === user.id) {
+      const longURL = urlDatabase[shortURL].longURL;
+      urls[shortURL] = { longURL };
+    }
+  }
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies["user_id"]]
+    user,
+    urls
   };
   res.render("urls_index", templateVars);
 });
