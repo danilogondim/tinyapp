@@ -29,13 +29,15 @@ const users = {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = {
+    user: users[req.cookies["user_id"]]
+  };
   res.render("urls_new", templateVars);
 });
 
@@ -43,7 +45,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
@@ -88,21 +90,25 @@ app.post('/urls/:shortURL', (req, res) => {
 
 // Add a route to handle a POST to /login. It sets a cookie named username to the value submitted via the login form. Then, it redirects the browser back to the /urls page"
 app.post('/login', (req, res) => {
-  if (req.body.username !== "") {
-    res.cookie("username", req.body.username);
-  }
+  // now we need to change this conditional. We should compare our user database with the passed credations
+  // if (req.body.user_id !== "") {
+  //   res.cookie("username", req.body.username);
+  // }
   res.redirect('/urls');
 });
 
-// Add a route to handle a POST to /logout. It clears the username cookie and redirects to /urls
+// Add a route to handle a POST to /logout. It clears the user_id cookie and redirects to /urls
 app.post('/logout', (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect('/urls');
 });
 
 // Add a GET route to render the register template
 app.get('/register', (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  // SHOULD I PASS THE USER_ID or USER OBJECT???? IF I AM REGISTERING SOMEONE NEW, IT SHOULD MEAN THAT I DON'T HAVE THE COOKIE SET
+  const templateVars = {
+    user: users[req.cookies["user_id"]]
+  };
   res.render('register', templateVars);
 });
 

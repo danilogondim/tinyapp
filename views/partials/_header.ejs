@@ -10,11 +10,11 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <% if (username === undefined) { %>
+      <% if (user === undefined) { %>
       <form class="form-inline ml-auto" action="/login" method="POST">
         <div class="form-group mb-2">
-          <label for="username"></label>
-          <input class="form-control" type="text" name="username" placeholder="Username"
+          <label for="email"></label>
+          <input class="form-control" type="text" name="email" placeholder="email"
             style="width: 250px; margin: 1em">
           <button type="submit" class="btn btn-outline-dark">Login</button>
         </div>
@@ -22,7 +22,7 @@
       <% } else { %>
       <form class="form-inline ml-auto" action="/logout" method="POST">
         <div class="form-group mb-2">
-          <label for="username" style=" margin: 1em">Logged in as: <%= username %>!</label>
+          <label for="user_id" style=" margin: 1em">Logged in as: <%= user.email %>!</label>
           <button type="submit" class="btn btn-outline-dark">Logout</button>
         </div>
       </form>
