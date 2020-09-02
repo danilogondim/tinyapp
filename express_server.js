@@ -121,17 +121,22 @@ app.get('/login', (req, res) => {
   res.render('login', templateVars);
 });
 
-// Add a route to handle a POST to /login. It sets a cookie named username to the value submitted via the login form. Then, it redirects the browser back to the /urls page"
+// Add a route to handle a POST to /login
 app.post('/login', (req, res) => {
-  // compare the given credentials to our user database
   const { email, password } = req.body;
-  for (const key in users) {
-    if (users[key].email === email && users[key].password === password) {
-      res.cookie("user_id", key);
-      return res.redirect('/urls');
+  if (email === "" || password === "") {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>Please make sure you have filled both the email and password fields.</p>");
+  }
+  if (existingEmail(email)) {
+    for (const key in users) {
+      if (users[key].email === email && users[key].password === password) {
+        // if the credentials given are valid and match our database, a user_id cookie will be set
+        res.cookie("user_id", key);
+        return res.redirect('/urls');
+      }
     }
   }
-  return res.redirect("login");
+  return res.status(403).send("<h1>403 Forbidden client error </h1><p>Please make sure you are using valid credentials.</p>");
 });
 
 // Add a route to handle a POST to /logout. It clears the user_id cookie and redirects to /urls
