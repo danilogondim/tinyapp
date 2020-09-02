@@ -112,10 +112,16 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
-// Add a POST route to include the new user in our users object
+// Add a POST route to include the new user in our users object if the required fields are filled and the email is not already registered in our users database
 app.post('/register', (req, res) => {
-  const id = generateRandomString();
   const { email, password } = req.body;
+  if (email === "" || password === "") {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>Please make sure you have filled both the email and password fields.</p>");
+  }
+  if (existingEmail(email)) {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>The email is already registered.</p>");
+  }
+  const id = generateRandomString();
   users[id] = { id, email, password };
   res.cookie("user_id", id);
   res.redirect('/urls');
@@ -125,9 +131,20 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+// create a function that returns a string of 6 random alphanumeric characters
 const generateRandomString = () => {
   // Math.random() generates a random number between 0 (inclusive) and 1 (exclusive)
   // toString(36) will transform this number in a string using base 36: a binary-to-text encoding scheme that represents binary data in an ASCII string format by translating it into a radix-36 representation. The choice of 36 is convenient in that the digits can be represented using the Arabic numerals 0–9 and the Latin letters A–Z(https://en.wikipedia.org/wiki/Base36)
   // The substring() method returns the part of the string between the start and end indexes, or to the end of the string.
   return Math.random().toString(36).substring(2, 8);
+};
+
+// a function to lookup for existing emails and returns whether or not the new email is exclusive
+const existingEmail = email => {
+  for (const key in users) {
+    if (users[key].email === email) {
+      return true;
+    }
+  }
+  return false;
 };
