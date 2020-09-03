@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = 8080;
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -17,12 +18,13 @@ const users = {
   "aJ48lW": {
     id: "aJ48lW",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
+
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 };
 
@@ -122,14 +124,21 @@ app.get('/register', (req, res) => {
 // Add a POST route to include the new user in our users object if the required fields are filled and the email is not already registered in our users database
 app.post('/register', (req, res) => {
   const { email, password } = req.body;
+  // before accepting the registration, we check if either of the fields are blank or if the email is already registered
   if (email === "" || password === "") {
     return res.status(400).send("<h1>400 Bad Request</h1><p>Please make sure you have filled both the email and password fields.</p>");
   }
   if (existingEmail(email)) {
     return res.status(400).send("<h1>400 Bad Request</h1><p>The email is already registered.</p>");
   }
+
+  // if it passes our tests, now we will set the new user;
   const id = generateRandomString();
-  users[id] = { id, email, password };
+  users[id] = {
+    id,
+    email,
+    password: bcrypt.hashSync(password, 10)
+  };
   res.cookie("user_id", id);
   res.redirect('/urls');
 });
@@ -146,12 +155,15 @@ app.get('/login', (req, res) => {
 // Add a route to handle a POST to /login
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
+  // first check if the login attempt was valid (no blank fields)
   if (email === "" || password === "") {
     return res.status(400).send("<h1>400 Bad Request</h1><p>Please make sure you have filled both the email and password fields.</p>");
   }
+
+  // check if the credentials match with one of our registered users
   if (existingEmail(email)) {
     for (const key in users) {
-      if (users[key].email === email && users[key].password === password) {
+      if (users[key].email === email && bcrypt.compareSync(password, users[key].password)) {
         // if the credentials given are valid and match our database, a user_id cookie will be set
         res.cookie("user_id", key);
         return res.redirect('/urls');
