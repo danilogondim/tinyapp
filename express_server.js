@@ -130,6 +130,11 @@ app.post('/urls/:shortURL', (req, res) => {
 
 // Add a GET route to render the register template
 app.get('/register', (req, res) => {
+  const userID = req.session.user_id;
+  if (userID) {
+    return res.redirect('/urls');
+  }
+  
   // SHOULD I PASS THE USER_ID or USER OBJECT???? IF I AM REGISTERING SOMEONE NEW, IT SHOULD MEAN THAT I DON'T HAVE THE COOKIE SET
   const templateVars = {
     user: users[req.session.user_id]
@@ -162,6 +167,10 @@ app.post('/register', (req, res) => {
 // Add a GET route to render the login template
 app.get('/login', (req, res) => {
   // SHOULD I PASS THE USER_ID or USER OBJECT???? IF I HAVE THE COOKIE SET, WHAT SHOULD BE THE EXPECTED BEHAVIOR?
+  const userID = req.session.user_id;
+  if (userID) {
+    return res.redirect('/urls');
+  }
   const templateVars = {
     user: users[req.session.user_id]
   };
