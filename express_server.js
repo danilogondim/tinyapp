@@ -64,14 +64,16 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+
+// a post route to create new shortened urls
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
-  const longURl = req.body.longURL;
-  if (longURl.match(/^(https:\/\/|http:\/\/)/)) {
-    urlDatabase[shortURL] = longURl;
-  } else {
-    urlDatabase[shortURL] = `http://www.${longURl}`;
+  let longURl = req.body.longURL;
+  const userID = req.cookies["user_id"];
+  if (!(longURl.match(/^(https:\/\/|http:\/\/)/))) {
+    longURl = `http://www.${longURl}`;
   }
+  urlDatabase[shortURL] = { "longURL": longURl, userID };
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -82,18 +84,29 @@ app.get('/u/:shortURL', (req, res) => {
 
 // Add a POST route that removes a URL resource: POST /urls/:shortURL/delete, and redirects the client back to the urls_index page ("/urls").
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  const user = users[req.cookies["user_id"]];
+  const urls = urlsForUser(user);
+  const shortURL = req.params.shortURL;
+  if (Object.keys(urls).includes(shortURL)) {
+    delete urlDatabase[shortURL];
+  }
   res.redirect("/urls");
 });
 
 // Add a POST route that updates a URL resource: POST /urls/:shortURL, and redirects the client back to the urls_show page ("/urls/:shortURL").
 app.post('/urls/:shortURL', (req, res) => {
+
+  const user = users[req.cookies["user_id"]];
+  const urls = urlsForUser(user);
   const shortURL = req.params.shortURL;
   const longURl = req.body.longURL;
-  if (longURl.match(/^(https:\/\/|http:\/\/)/)) {
-    urlDatabase[shortURL] = longURl;
-  } else {
-    urlDatabase[shortURL] = `http://www.${longURl}`;
+
+  if (Object.keys(urls).includes(shortURL)) {
+    if (longURl.match(/^(https:\/\/|http:\/\/)/)) {
+      urlDatabase[shortURL].longURL = longURl;
+    } else {
+      urlDatabase[shortURL].longURL = `http://www.${longURl}`;
+    }
   }
   res.redirect(`/urls/${shortURL}`);
 });
