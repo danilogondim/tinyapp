@@ -6,7 +6,7 @@ const cookieSession = require('cookie-session');
 // const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const { urlDatabase, users } = require('./databases/db');
-const { getUserByEmail, generateRandomString } = require('./helpers');
+const { getUserByEmail, userURLs, generateRandomString } = require('./helpers');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -17,13 +17,9 @@ app.use(cookieSession({
 
 app.set("view engine", "ejs");
 
-
-
-
-
 app.get("/urls", (req, res) => {
   const user = users[req.session.user_id];
-  const urls = urlsForUser(user);
+  const urls = userURLs(user, urlDatabase);
   const templateVars = {
     user,
     urls
@@ -44,7 +40,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const user = users[req.session.user_id];
-  const urls = urlsForUser(user);
+  const urls = userURLs(user, urlDatabase);
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -79,7 +75,7 @@ app.get('/u/:shortURL', (req, res) => {
 // Add a POST route that removes a URL resource: POST /urls/:shortURL/delete, and redirects the client back to the urls_index page ("/urls").
 app.post('/urls/:shortURL/delete', (req, res) => {
   const user = users[req.session.user_id];
-  const urls = urlsForUser(user);
+  const urls = userURLs(user, urlDatabase);
   const shortURL = req.params.shortURL;
   if (Object.keys(urls).includes(shortURL)) {
     delete urlDatabase[shortURL];
@@ -91,7 +87,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/urls/:shortURL', (req, res) => {
 
   const user = users[req.session.user_id];
-  const urls = urlsForUser(user);
+  const urls = userURLs(user, urlDatabase);
   const shortURL = req.params.shortURL;
   const longURl = req.body.longURL;
 
@@ -175,23 +171,3 @@ app.post('/logout', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
-
-
-
-
-
-
-
-const urlsForUser = user => {
-  const urls = {};
-  for (const shortURL in urlDatabase) {
-    const userID = urlDatabase[shortURL].userID;
-    if (user && userID === user.id) {
-      const longURL = urlDatabase[shortURL].longURL;
-      urls[shortURL] = { longURL };
-    }
-  }
-  return urls;
-};
