@@ -10,6 +10,14 @@
 
   <body>
     <%- include('partials/_header') %>
+
+    <% if (!user) { %>
+      <p>Please <a href="/login">log in</a> to edit your URL.</p>
+
+    <% } else if (!Object.keys(urls).includes(shortURL)) { %>
+      <p>The URL you are trying to edit does not belong to you.</p>
+
+    <% } else { %>
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
@@ -26,6 +34,8 @@
         </form>
       </div>
     </div>
+    <% } %>
+
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"

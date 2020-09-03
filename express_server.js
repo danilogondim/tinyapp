@@ -17,7 +17,8 @@ const users = {
   "aJ48lW": {
     id: "aJ48lW",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "123"
+    // password: "purple-monkey-dinosaur"
   },
   "user2RandomID": {
     id: "user2RandomID",
@@ -28,14 +29,7 @@ const users = {
 
 app.get("/urls", (req, res) => {
   const user = users[req.cookies["user_id"]];
-  const urls = {};
-  for (const shortURL in urlDatabase) {
-    const userID = urlDatabase[shortURL].userID;
-    if (user && userID === user.id) {
-      const longURL = urlDatabase[shortURL].longURL;
-      urls[shortURL] = { longURL };
-    }
-  }
+  const urls = urlsForUser(user);
   const templateVars = {
     user,
     urls
@@ -55,10 +49,13 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  const urls = urlsForUser(user);
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies["user_id"]]
+    user,
+    urls
   };
   res.render("urls_show", templateVars);
 });
@@ -178,4 +175,17 @@ const existingEmail = email => {
     }
   }
   return false;
+};
+
+
+const urlsForUser = user => {
+  const urls = {};
+  for (const shortURL in urlDatabase) {
+    const userID = urlDatabase[shortURL].userID;
+    if (user && userID === user.id) {
+      const longURL = urlDatabase[shortURL].longURL;
+      urls[shortURL] = { longURL };
+    }
+  }
+  return urls;
 };
