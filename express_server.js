@@ -1,19 +1,18 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const app = express();
-const PORT = 8080;
 const cookieSession = require('cookie-session');
-// const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const { urlDatabase, users } = require('./databases/db');
 const { getUserByEmail, userURLs, generateRandomString } = require('./helpers');
+
+const app = express();
+const PORT = 8080;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['aRandomWritTen_key with non-sense charactersajsalkasaolska', '1abo9031,daxj']
 }));
-// app.use(cookieParser());
 
 app.set("view engine", "ejs");
 
