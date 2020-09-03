@@ -6,6 +6,7 @@ const cookieSession = require('cookie-session');
 // const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const { urlDatabase, users } = require('./databases/db');
+const { getUserByEmail } = require('./helpers');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -188,17 +189,6 @@ const generateRandomString = () => {
   // The substring() method returns the part of the string between the start and end indexes, or to the end of the string.
   return Math.random().toString(36).substring(2, 8);
 };
-
-// // a function to lookup for existing emails and returns the user if its registered
-const getUserByEmail = (email, database) => {
-  for (const key in database) {
-    if (database[key].email === email) {
-      return database[key];
-    }
-  }
-  return undefined;
-};
-
 
 const urlsForUser = user => {
   const urls = {};
