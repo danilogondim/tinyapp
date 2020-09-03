@@ -5,6 +5,7 @@ const PORT = 8080;
 const cookieSession = require('cookie-session');
 // const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
+const { urlDatabase, users } = require('./databases/db');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -12,26 +13,12 @@ app.use(cookieSession({
   keys: ['aRandomWritTen_key with non-sense charactersajsalkasaolska', '1abo9031,daxj']
 }));
 // app.use(cookieParser());
+
 app.set("view engine", "ejs");
 
-const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "aJ48lW" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "aJ48lW" }
-};
 
-const users = {
-  "aJ48lW": {
-    id: "aJ48lW",
-    email: "user@example.com",
-    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
 
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: bcrypt.hashSync("dishwasher-funk", 10)
-  }
-};
+
 
 app.get("/urls", (req, res) => {
   const user = users[req.session.user_id];
@@ -133,7 +120,7 @@ app.post('/register', (req, res) => {
   if (email === "" || password === "") {
     return res.status(400).send("<h1>400 Bad Request</h1><p>Please make sure you have filled both the email and password fields.</p>");
   }
-  if (existingEmail(email)) {
+  if (getUserByEmail(email, users)) {
     return res.status(400).send("<h1>400 Bad Request</h1><p>The email is already registered.</p>");
   }
 
@@ -166,13 +153,12 @@ app.post('/login', (req, res) => {
   }
 
   // check if the credentials match with one of our registered users
-  if (existingEmail(email)) {
-    for (const key in users) {
-      if (users[key].email === email && bcrypt.compareSync(password, users[key].password)) {
-        // if the credentials given are valid and match our database, a user_id cookie will be set
-        req.session.user_id = key;
-        return res.redirect('/urls');
-      }
+  const user = getUserByEmail(email, users);
+  if (user) {
+    if (user.email === email && bcrypt.compareSync(password, user.password)) {
+      // if the credentials given are valid and match our database, a user_id cookie will be set
+      req.session.user_id = user.id;
+      return res.redirect('/urls');
     }
   }
   return res.status(403).send("<h1>403 Forbidden client error </h1><p>Please make sure you are using valid credentials.</p>");
@@ -189,6 +175,12 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+
+
+
+
+
+
 // create a function that returns a string of 6 random alphanumeric characters
 const generateRandomString = () => {
   // Math.random() generates a random number between 0 (inclusive) and 1 (exclusive)
@@ -197,14 +189,14 @@ const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
 
-// a function to lookup for existing emails and returns whether or not the new email is exclusive
-const existingEmail = email => {
-  for (const key in users) {
-    if (users[key].email === email) {
-      return true;
+// // a function to lookup for existing emails and returns the user if its registered
+const getUserByEmail = (email, database) => {
+  for (const key in database) {
+    if (database[key].email === email) {
+      return database[key];
     }
   }
-  return false;
+  return undefined;
 };
 
 
