@@ -2,11 +2,16 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const PORT = 8080;
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+// const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['aRandomWritTen_key with non-sense charactersajsalkasaolska', '1abo9031,daxj']
+}));
+// app.use(cookieParser());
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -29,7 +34,7 @@ const users = {
 };
 
 app.get("/urls", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.session.user_id];
   const urls = urlsForUser(user);
   const templateVars = {
     user,
@@ -40,9 +45,9 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   // only registered users can shorten URLs. If the user is not logged in, the page redirects to the login page
-  if (req.cookies["user_id"]) {
+  if (req.session.user_id) {
     const templateVars = {
-      user: users[req.cookies["user_id"]]
+      user: users[req.session.user_id]
     };
     return res.render("urls_new", templateVars);
   }
@@ -50,7 +55,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.session.user_id];
   const urls = urlsForUser(user);
   const templateVars = {
     shortURL: req.params.shortURL,
@@ -70,7 +75,7 @@ app.get("/urls.json", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   let longURl = req.body.longURL;
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if (!(longURl.match(/^(https:\/\/|http:\/\/)/))) {
     longURl = `http://www.${longURl}`;
   }
@@ -85,7 +90,7 @@ app.get('/u/:shortURL', (req, res) => {
 
 // Add a POST route that removes a URL resource: POST /urls/:shortURL/delete, and redirects the client back to the urls_index page ("/urls").
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.session.user_id];
   const urls = urlsForUser(user);
   const shortURL = req.params.shortURL;
   if (Object.keys(urls).includes(shortURL)) {
@@ -97,7 +102,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // Add a POST route that updates a URL resource: POST /urls/:shortURL, and redirects the client back to the urls_show page ("/urls/:shortURL").
 app.post('/urls/:shortURL', (req, res) => {
 
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.session.user_id];
   const urls = urlsForUser(user);
   const shortURL = req.params.shortURL;
   const longURl = req.body.longURL;
@@ -116,7 +121,7 @@ app.post('/urls/:shortURL', (req, res) => {
 app.get('/register', (req, res) => {
   // SHOULD I PASS THE USER_ID or USER OBJECT???? IF I AM REGISTERING SOMEONE NEW, IT SHOULD MEAN THAT I DON'T HAVE THE COOKIE SET
   const templateVars = {
-    user: users[req.cookies["user_id"]]
+    user: users[req.session.user_id]
   };
   res.render('register', templateVars);
 });
@@ -139,7 +144,7 @@ app.post('/register', (req, res) => {
     email,
     password: bcrypt.hashSync(password, 10)
   };
-  res.cookie("user_id", id);
+  req.session.user_id = id;
   res.redirect('/urls');
 });
 
@@ -147,7 +152,7 @@ app.post('/register', (req, res) => {
 app.get('/login', (req, res) => {
   // SHOULD I PASS THE USER_ID or USER OBJECT???? IF I HAVE THE COOKIE SET, WHAT SHOULD BE THE EXPECTED BEHAVIOR?
   const templateVars = {
-    user: users[req.cookies["user_id"]]
+    user: users[req.session.user_id]
   };
   res.render('login', templateVars);
 });
@@ -165,7 +170,7 @@ app.post('/login', (req, res) => {
     for (const key in users) {
       if (users[key].email === email && bcrypt.compareSync(password, users[key].password)) {
         // if the credentials given are valid and match our database, a user_id cookie will be set
-        res.cookie("user_id", key);
+        req.session.user_id = key;
         return res.redirect('/urls');
       }
     }
@@ -175,7 +180,8 @@ app.post('/login', (req, res) => {
 
 // Add a route to handle a POST to /logout. It clears the user_id cookie and redirects to /urls
 app.post('/logout', (req, res) => {
-  res.clearCookie("user_id");
+  res.clearCookie("session");
+  res.clearCookie("session.sig");
   res.redirect('/urls');
 });
 
