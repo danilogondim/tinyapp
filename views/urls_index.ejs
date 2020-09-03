@@ -15,10 +15,12 @@
     <%- include('partials/_header') %>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
+      <!-- if no user is logged in, it prints a message with the register and login links -->
       <% if (!user) { %>
       <p>Please <a href="/register">register</a> or <a href="/login">log in</a> to see your URLs.</p>
       <% } else { %>
 
+      <!-- prints a table with the user's urls -->
       <table class="table">
         <thead>
           <tr>
@@ -49,6 +51,7 @@
       </table>
       <br>
       <hr>
+      <!-- create an useful link in case the user wants to short a new url -->
       <h4><a href="/urls/new">Create a New Short Link</a></h4>
       <% } %>
     </main>

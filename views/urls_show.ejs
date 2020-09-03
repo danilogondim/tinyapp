@@ -10,19 +10,22 @@
 
   <body>
     <%- include('partials/_header') %>
-
+    <!-- if no user is logged in, it prints a message asking the user to log in -->
     <% if (!user) { %>
       <br>
       <p class="ml-2">Please <a href="/login">log in</a> to edit your URL.</p>
 
+    <!-- if the shortURL does not exist, inform the user about the issue -->
     <% } else if (!longURL) { %>
       <br>
       <pc lass="ml-2">Something went wrong. Please verify the shortURL unique identification code you are trying to access.</p>
 
+    <!-- if the shortURL does not belong to the user, inform the user that he can't proceed -->
     <% } else if (!Object.keys(urls).includes(shortURL)) { %>
       <br>
       <p class="ml-2">The URL you are trying to edit does not belong to you.</p>
 
+    <!-- only if all conditions are met, let the user edit his URL -->
     <% } else { %>
     <div class="card text-center">
       <div class="card-header"></div>
