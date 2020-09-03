@@ -65,14 +65,17 @@ app.get("/urls.json", (req, res) => {
 
 // a post route to create new shortened urls
 app.post("/urls", (req, res) => {
+  const userID = req.session.user_id;
+  if (!userID) {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>You need to be logged in in order to short an URL.</p>");
+  }
   const shortURL = generateRandomString();
   let longURl = req.body.longURL;
-  const userID = req.session.user_id;
   if (!(longURl.match(/^(https:\/\/|http:\/\/)/))) {
     longURl = `http://www.${longURl}`;
   }
   urlDatabase[shortURL] = { "longURL": longURl, userID };
-  res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/${shortURL}`);
 });
 
 app.get('/u/:shortURL', (req, res) => {
@@ -86,11 +89,17 @@ app.get('/u/:shortURL', (req, res) => {
 
 // Add a POST route that removes a URL resource: POST /urls/:shortURL/delete, and redirects the client back to the urls_index page ("/urls").
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const user = users[req.session.user_id];
+  const userID = req.session.user_id;
+  if (!userID) {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>You need to be logged in in order to delete your URL.</p>");
+  }
+  const user = users[userID];
   const urls = userURLs(user, urlDatabase);
   const shortURL = req.params.shortURL;
   if (Object.keys(urls).includes(shortURL)) {
     delete urlDatabase[shortURL];
+  } else {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>You can only delete the URLs you own.</p>");
   }
   res.redirect("/urls");
 });
@@ -98,7 +107,11 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // Add a POST route that updates a URL resource: POST /urls/:shortURL, and redirects the client back to the urls_show page ("/urls/:shortURL").
 app.post('/urls/:shortURL', (req, res) => {
 
-  const user = users[req.session.user_id];
+  const userID = req.session.user_id;
+  if (!userID) {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>You need to be logged in in order to update your URL.</p>");
+  }
+  const user = users[userID];
   const urls = userURLs(user, urlDatabase);
   const shortURL = req.params.shortURL;
   const longURl = req.body.longURL;
@@ -109,6 +122,8 @@ app.post('/urls/:shortURL', (req, res) => {
     } else {
       urlDatabase[shortURL].longURL = `http://www.${longURl}`;
     }
+  } else {
+    return res.status(400).send("<h1>400 Bad Request</h1><p>You can only update the URLs you own.</p>");
   }
   res.redirect(`/urls/${shortURL}`);
 });
