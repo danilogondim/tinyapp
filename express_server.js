@@ -17,8 +17,7 @@ const users = {
   "aJ48lW": {
     id: "aJ48lW",
     email: "user@example.com",
-    password: "123"
-    // password: "purple-monkey-dinosaur"
+    password: "purple-monkey-dinosaur"
   },
   "user2RandomID": {
     id: "user2RandomID",
