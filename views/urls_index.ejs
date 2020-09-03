@@ -16,7 +16,7 @@
     <main style="margin: 1em;">
       <h3>My URLs</h3>
       <% if (!user) { %>
-        <p>Please <a href="/register">register</a> or <a href="/login">log in</a> to see your URLs.</p>
+      <p>Please <a href="/register">register</a> or <a href="/login">log in</a> to see your URLs.</p>
       <% } else { %>
 
       <table class="table">
@@ -47,6 +47,9 @@
           <% } %>
         </tbody>
       </table>
+      <br>
+      <hr>
+      <h4><a href="/urls/new">Create a New Short Link</a></h4>
       <% } %>
     </main>
     <!-- Bootstrap JS -->

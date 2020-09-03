@@ -16,6 +16,14 @@ app.use(cookieSession({
 
 app.set("view engine", "ejs");
 
+app.get('/', (req, res) => {
+  if (req.session.user_id) {
+    return res.redirect('urls');
+  }
+  res.redirect('login');
+});
+
+
 app.get("/urls", (req, res) => {
   const user = users[req.session.user_id];
   const urls = userURLs(user, urlDatabase);
@@ -40,9 +48,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const user = users[req.session.user_id];
   const urls = userURLs(user, urlDatabase);
+  const longURL = urlDatabase[req.params.shortURL] ? urlDatabase[req.params.shortURL].longURL : "";
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    longURL,
     user,
     urls
   };
@@ -67,8 +76,12 @@ app.post("/urls", (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  const longURL = urlDatabase[req.params.shortURL] ? urlDatabase[req.params.shortURL].longURL : "";
+  console.log(longURL);
+  if (longURL) {
+    return res.redirect(longURL);
+  }
+  return res.status(400).send("<h1>400 Bad Request</h1><p>The link you are trying to access is not available. It may have been removed from our database by its owner.</p>");
 });
 
 // Add a POST route that removes a URL resource: POST /urls/:shortURL/delete, and redirects the client back to the urls_index page ("/urls").

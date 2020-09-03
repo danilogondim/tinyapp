@@ -12,10 +12,16 @@
     <%- include('partials/_header') %>
 
     <% if (!user) { %>
-      <p>Please <a href="/login">log in</a> to edit your URL.</p>
+      <br>
+      <p class="ml-2">Please <a href="/login">log in</a> to edit your URL.</p>
+
+    <% } else if (!longURL) { %>
+      <br>
+      <pc lass="ml-2">Something went wrong. Please verify the shortURL unique identification code you are trying to access.</p>
 
     <% } else if (!Object.keys(urls).includes(shortURL)) { %>
-      <p>The URL you are trying to edit does not belong to you.</p>
+      <br>
+      <p class="ml-2">The URL you are trying to edit does not belong to you.</p>
 
     <% } else { %>
     <div class="card text-center">
@@ -27,9 +33,9 @@
       <div class="card-footer text-muted">
         <h2>Edit</h2>
         <form class="form-inline justify-content-center" action="/urls/<%= shortURL %>" method="POST">
-          <label for="longURL">Enter the new URL:</label>
-          <input class="form-control" type="text" name="longURL" placeholder=<%= longURL %>
-            style="width: 300px; margin: 1em">
+          <label for="longURL">Edit your URL:</label>
+          <input class="form-control" type="text" name="longURL" value=<%= longURL %>
+            style="width: 300px; margin: 1em; margin-left: 0.5em;">
           <button type="submit" class="btn btn-outline-primary">Update URL</button>
         </form>
       </div>
