@@ -6,7 +6,7 @@ const cookieSession = require('cookie-session');
 // const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const { urlDatabase, users } = require('./databases/db');
-const { getUserByEmail } = require('./helpers');
+const { getUserByEmail, generateRandomString } = require('./helpers');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -182,13 +182,7 @@ app.listen(PORT, () => {
 
 
 
-// create a function that returns a string of 6 random alphanumeric characters
-const generateRandomString = () => {
-  // Math.random() generates a random number between 0 (inclusive) and 1 (exclusive)
-  // toString(36) will transform this number in a string using base 36: a binary-to-text encoding scheme that represents binary data in an ASCII string format by translating it into a radix-36 representation. The choice of 36 is convenient in that the digits can be represented using the Arabic numerals 0–9 and the Latin letters A–Z(https://en.wikipedia.org/wiki/Base36)
-  // The substring() method returns the part of the string between the start and end indexes, or to the end of the string.
-  return Math.random().toString(36).substring(2, 8);
-};
+
 
 const urlsForUser = user => {
   const urls = {};
