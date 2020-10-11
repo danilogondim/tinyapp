@@ -31,6 +31,9 @@
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+        <% if (error) { %>
+          <div class="alert alert-danger" role="alert">It seems that this URL is not accessible. Make sure it is valid and/or includes a protocol.</div>
+        <% } %>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       </div>
       <div class="card-footer text-muted">

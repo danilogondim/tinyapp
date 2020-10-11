@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const request = require('request');
 const { urlDatabase, users } = require('./databases/db');
 const { getUserByEmail, userURLs, generateRandomString } = require('./helpers');
 
@@ -56,11 +57,7 @@ app.post("/urls", (req, res) => {
     return res.status(400).send("<h1>400 Bad Request</h1><p>You need to be logged in in order to short an URL.</p>");
   }
   const shortURL = generateRandomString();
-  let longURl = req.body.longURL;
-  // in case the user did not pass the url with a protocol, it will add the http protocol
-  if (!(longURl.match(/^(https:\/\/|http:\/\/)/))) {
-    longURl = `http://www.${longURl}`;
-  }
+  const longURl = req.body.longURL;
   urlDatabase[shortURL] = {
     "longURL": longURl,
     userID
@@ -73,13 +70,20 @@ app.get("/urls/:shortURL", (req, res) => {
   const user = users[req.session.user_id];
   const urls = userURLs(user, urlDatabase);
   const longURL = urlDatabase[req.params.shortURL] ? urlDatabase[req.params.shortURL].longURL : "";
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL,
-    user,
-    urls
-  };
-  res.render("urls_show", templateVars);
+  let error;
+  request(longURL, (e, response, body) => {
+    if (e) {
+      error = e;
+    }
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL,
+      user,
+      urls,
+      error
+    };
+    res.render("urls_show", templateVars);
+  })
 });
 
 // check if a corresponding longURL exists and redirect the user accordingly
@@ -122,13 +126,9 @@ app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURl = req.body.longURL;
 
-  // if the user owns the url, edit as requested (add a protocol if necessary). Otherwise, inform that the action is not allowed
+  // if the user owns the url, edit as requested. Otherwise, inform that the action is not allowed
   if (Object.keys(urls).includes(shortURL)) {
-    if (longURl.match(/^(https:\/\/|http:\/\/)/)) {
-      urlDatabase[shortURL].longURL = longURl;
-    } else {
-      urlDatabase[shortURL].longURL = `http://www.${longURl}`;
-    }
+    urlDatabase[shortURL].longURL = longURl;
   } else {
     return res.status(400).send("<h1>400 Bad Request</h1><p>You can only update the URLs you own.</p>");
   }
@@ -189,12 +189,10 @@ app.post('/login', (req, res) => {
   }
   // checks if the credentials match one of our registered users
   const user = getUserByEmail(email, users);
-  if (user) {
-    if (user.email === email && bcrypt.compareSync(password, user.password)) {
-      // if all conditions are met, a user_id cookie will be set
-      req.session.user_id = user.id;
-      return res.redirect('/urls');
-    }
+  if (user && user.email === email && bcrypt.compareSync(password, user.password)) {
+    // if all conditions are met, a user_id cookie will be set
+    req.session.user_id = user.id;
+    return res.redirect('/urls');
   }
   return res.status(403).send("<h1>403 Forbidden client error </h1><p>Please make sure you are using valid credentials.</p>");
 });
